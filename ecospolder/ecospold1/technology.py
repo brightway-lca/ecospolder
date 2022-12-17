@@ -1,11 +1,6 @@
-from ..ecospold_base import *
-
-
-def _cast(typ, value):
-    if typ is None or value is None:
-        return value
-    return typ(value)
-
+import sys
+sys.path.append('../')
+from ecospold_base import *
 
 class Technology(EcospoldBase):
     """Technology -- Contains a description of the technology for which flow data have been collected. Free text can be used. Pictures, graphs and tables are not allowed. The text should cover information necessary to identify the properties and particularities of the technology(ies) underlying the process data.
@@ -16,37 +11,23 @@ class Technology(EcospoldBase):
 
     """
 
-    def __init__(self, text=None, gds_collector_=None, **kwargs_):
-        self.gds_collector_ = gds_collector_
-        self.gds_elementtree_node_ = None
-        self.original_tagname_ = None
-        self.parent_object_ = kwargs_.get("parent_object_")
-        self.ns_prefix_ = ""
-        self.text = _cast(None, text)
-        self.text_nsprefix_ = None
+    def __init__(self, text=None, collector=None, **kwargs) -> None:
+        self.collector = collector
+        self.elementtree_node = None
+        self.original_tagname = None
+        self.parent_object = kwargs.get("parent_object")
+        self.text = cast_value_with_type(None, text)
 
-    def factory(*args_, **kwargs_):
-        if CurrentSubclassModule_ is not None:
-            subclass = getSubclassFromModule_(CurrentSubclassModule_, Technology)
-            if subclass is not None:
-                return subclass(*args_, **kwargs_)
-        if Technology.subclass:
-            return Technology.subclass(*args_, **kwargs_)
-        else:
-            return Technology(*args_, **kwargs_)
-
-    factory = staticmethod(factory)
-
-    def validate_TString32000(self, value):
+    def validate_TString32000(self, value) -> bool:
         # Validate type TString32000, a restriction on xsd:string.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and Validate_simpletypes
+            and self.collector is not None
         ):
             if not isinstance(value, str):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (str)'
                     % {
                         "value": value,
@@ -55,14 +36,14 @@ class Technology(EcospoldBase):
                 )
                 return False
             if len(value) > 32000:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd maxLength restriction on TString32000'
                     % {"value": encode_str_2_3(value), "lineno": lineno}
                 )
                 result = False
 
-    def _hasContent(self):
+    def hasContent(self) -> bool:
         if ():
             return True
         else:
@@ -72,103 +53,97 @@ class Technology(EcospoldBase):
         self,
         outfile,
         level,
-        namespaceprefix_="",
-        namespacedef_='xmlns:es="http://www.EcoInvent.org/EcoSpold01"',
-        name_="Technology",
+        namespaceprefix="",
+        namespacedef='xmlns:es="http://www.EcoInvent.org/EcoSpold01"',
+        name="Technology",
         pretty_print=True,
     ):
-        imported_ns_def_ = GenerateDSNamespaceDefs_.get("Technology")
-        if imported_ns_def_ is not None:
-            namespacedef_ = imported_ns_def_
         if pretty_print:
-            eol_ = "\n"
+            eol = "\n"
         else:
-            eol_ = ""
-        if self.original_tagname_ is not None and name_ == "Technology":
-            name_ = self.original_tagname_
-        if UseCapturedNS_ and self.ns_prefix_:
-            namespaceprefix_ = self.ns_prefix_ + ":"
+            eol = ""
+        if self.original_tagname is not None and name == "Technology":
+            name = self.original_tagname
         showIndent(outfile, level, pretty_print)
         outfile.write(
             "<%s%s%s"
             % (
-                namespaceprefix_,
-                name_,
-                namespacedef_ and " " + namespacedef_ or "",
+                namespaceprefix,
+                name,
+                namespacedef and " " + namespacedef or "",
             )
         )
         already_processed = set()
-        self._exportAttributes(
-            outfile, level, already_processed, namespaceprefix_, name_="Technology"
+        self.exportAttributes(
+            outfile, level, already_processed, namespaceprefix, name="Technology"
         )
-        if self._hasContent():
-            outfile.write(">%s" % (eol_,))
-            self._exportChildren(
+        if self.hasContent():
+            outfile.write(">%s" % (eol,))
+            self.exportChildren(
                 outfile,
                 level + 1,
-                namespaceprefix_,
-                namespacedef_,
-                name_="Technology",
+                namespaceprefix,
+                namespacedef,
+                name="Technology",
                 pretty_print=pretty_print,
             )
-            outfile.write("</%s%s>%s" % (namespaceprefix_, name_, eol_))
+            outfile.write("</%s%s>%s" % (namespaceprefix, name, eol))
         else:
-            outfile.write("/>%s" % (eol_,))
+            outfile.write("/>%s" % (eol,))
 
-    def _exportAttributes(
+    def exportAttributes(
         self,
         outfile,
         level,
         already_processed,
-        namespaceprefix_="",
-        name_="Technology",
+        namespaceprefix="",
+        name="Technology",
     ):
         if self.text is not None and "text" not in already_processed:
             already_processed.add("text")
             outfile.write(
                 " text=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.text), input_name="text"
                         )
                     ),
                 )
             )
 
-    def _exportChildren(
+    def exportChildren(
         self,
         outfile,
         level,
-        namespaceprefix_="",
-        namespacedef_='xmlns:es="http://www.EcoInvent.org/EcoSpold01"',
-        name_="Technology",
-        fromsubclass_=False,
+        namespaceprefix="",
+        namespacedef='xmlns:es="http://www.EcoInvent.org/EcoSpold01"',
+        name="Technology",
+        fromsubclass=False,
         pretty_print=True,
     ):
         pass
 
-    def build(self, node, gds_collector_=None):
-        self.gds_collector_ = gds_collector_
+    def build(self, node, collector=None):
+        self.collector = collector
         if SaveElementTreeNode:
-            self.gds_elementtree_node_ = node
+            self.elementtree_node = node
         already_processed = set()
-        self.ns_prefix_ = node.prefix
-        self._buildAttributes(node, node.attrib, already_processed)
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self._buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+            nodeName = tag_pattern.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName, collector=collector)
         return self
 
-    def _buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_("text", node)
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value("text", node)
         if value is not None and "text" not in already_processed:
             already_processed.add("text")
             self.text = value
             self.validate_TString32000(self.text)  # validate type TString32000
 
-    def _buildChildren(
-        self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None
+    def buildChildren(
+        self, child_, node, nodeName, fromsubclass=False, collector=None
     ):
         pass
 

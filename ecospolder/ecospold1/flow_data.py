@@ -1,13 +1,10 @@
-from ..ecospold_base import EcospoldBase
+import sys
+sys.path.append('../')
+
+from ecospold_base import *
 
 from allocation import Allocation
 from exchange import Exchange
-
-
-def _cast(typ, value):
-    if typ is None or value is None:
-        return value
-    return typ(value)
 
 
 class FlowData(EcospoldBase):
@@ -21,37 +18,18 @@ class FlowData(EcospoldBase):
         self,
         exchange=None,
         allocation=None,
-        anytypeobjs_=None,
-        gds_collector_=None,
-        **kwargs_
-    ):
-        self.gds_collector_ = gds_collector_
-        self.gds_elementtree_node_ = None
-        self.original_tagname_ = None
-        self.parent_object_ = kwargs_.get("parent_object_")
-        self.ns_prefix_ = None
-        if exchange is None:
-            self.exchange = []
-        else:
-            self.exchange = exchange
-        self.exchange_nsprefix_ = None
-        if allocation is None:
-            self.allocation = []
-        else:
-            self.allocation = allocation
-        self.allocation_nsprefix_ = None
-        if anytypeobjs_ is None:
-            self.anytypeobjs_ = []
-        else:
-            self.anytypeobjs_ = anytypeobjs_
+        collector=None,
+        **kwargs
+    ) -> None:
+        self.collector = collector
+        self.elementtree_node = None
+        self.original_tagname = None
+        self.parent_object = kwargs.get("parent_object")
+        self.exchange = [] if exchange is None else exchange
+        self.allocation = [] if allocation is None else allocation
 
-    def factory(*args_, **kwargs_):
-        return FlowData(*args_, **kwargs_)
-
-    factory = staticmethod(factory)
-
-    def _hasContent(self):
-        if self.exchange or self.allocation or self.anytypeobjs_:
+    def hasContent(self) -> bool:
+        if self.exchange or self.allocation:
             return True
         else:
             return False
@@ -60,134 +38,110 @@ class FlowData(EcospoldBase):
         self,
         outfile,
         level,
-        namespaceprefix_="",
-        namespacedef_='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
-        name_="FlowData",
+        namespaceprefix="",
+        namespacedef='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
+        name="FlowData",
         pretty_print=True,
     ):
-        imported_ns_def_ = GenerateDSNamespaceDefs_.get("FlowData")
-        if imported_ns_def_ is not None:
-            namespacedef_ = imported_ns_def_
         if pretty_print:
-            eol_ = "\n"
+            eol = "\n"
         else:
-            eol_ = ""
-        if self.original_tagname_ is not None and name_ == "FlowData":
-            name_ = self.original_tagname_
-        if UseCapturedNS_ and self.ns_prefix_:
-            namespaceprefix_ = self.ns_prefix_ + ":"
+            eol = ""
+        if self.original_tagname is not None and name == "FlowData":
+            name = self.original_tagname
         showIndent(outfile, level, pretty_print)
         outfile.write(
             "<%s%s%s"
             % (
-                namespaceprefix_,
-                name_,
-                namespacedef_ and " " + namespacedef_ or "",
+                namespaceprefix,
+                name,
+                namespacedef and " " + namespacedef or "",
             )
         )
         already_processed = set()
-        self._exportAttributes(
-            outfile, level, already_processed, namespaceprefix_, name_="FlowData"
+        self.exportAttributes(
+            outfile, level, already_processed, namespaceprefix, name="FlowData"
         )
-        if self._hasContent():
-            outfile.write(">%s" % (eol_,))
-            self._exportChildren(
+        if self.hasContent():
+            outfile.write(">%s" % (eol,))
+            self.exportChildren(
                 outfile,
                 level + 1,
-                namespaceprefix_,
-                namespacedef_,
-                name_="FlowData",
+                namespaceprefix,
+                namespacedef,
+                name="FlowData",
                 pretty_print=pretty_print,
             )
             showIndent(outfile, level, pretty_print)
-            outfile.write("</%s%s>%s" % (namespaceprefix_, name_, eol_))
+            outfile.write("</%s%s>%s" % (namespaceprefix, name, eol))
         else:
-            outfile.write("/>%s" % (eol_,))
+            outfile.write("/>%s" % (eol,))
 
-    def _exportAttributes(
-        self, outfile, level, already_processed, namespaceprefix_="", name_="FlowData"
+    def exportAttributes(
+        self, outfile, level, already_processed, namespaceprefix="", name="FlowData"
     ):
         pass
 
-    def _exportChildren(
+    def exportChildren(
         self,
         outfile,
         level,
-        namespaceprefix_="",
-        namespacedef_='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
-        name_="FlowData",
-        fromsubclass_=False,
+        namespaceprefix="",
+        namespacedef='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
+        name="FlowData",
+        fromsubclass=False,
         pretty_print=True,
     ):
         if pretty_print:
-            eol_ = "\n"
+            eol = "\n"
         else:
-            eol_ = ""
-        for exchange_ in self.exchange:
-            namespaceprefix_ = (
-                self.exchange_nsprefix_ + ":"
-                if (UseCapturedNS_ and self.exchange_nsprefix_)
-                else ""
-            )
-            exchange_.export(
+            eol = ""
+        for exchange_item in self.exchange:
+            exchange_item.export(
                 outfile,
                 level,
-                namespaceprefix_,
-                namespacedef_="",
-                name_="exchange",
+                namespaceprefix,
+                namespacedef="",
+                name="exchange",
                 pretty_print=pretty_print,
             )
-        for allocation_ in self.allocation:
-            namespaceprefix_ = (
-                self.allocation_nsprefix_ + ":"
-                if (UseCapturedNS_ and self.allocation_nsprefix_)
-                else ""
-            )
-            allocation_.export(
+        for allocation_item in self.allocation:
+            allocation_item.export(
                 outfile,
                 level,
-                namespaceprefix_,
-                namespacedef_="",
-                name_="allocation",
+                namespaceprefix,
+                namespacedef="",
+                name="allocation",
                 pretty_print=pretty_print,
             )
-        if not fromsubclass_:
-            for obj_ in self.anytypeobjs_:
-                showIndent(outfile, level, pretty_print)
-                outfile.write(str(obj_))
-                outfile.write("\n")
 
-    def build(self, node, gds_collector_=None):
-        self.gds_collector_ = gds_collector_
+    def build(self, node, collector=None):
+        self.collector = collector
         if SaveElementTreeNode:
-            self.gds_elementtree_node_ = node
+            self.elementtree_node = node
         already_processed = set()
-        self.ns_prefix_ = node.prefix
-        self._buildAttributes(node, node.attrib, already_processed)
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self._buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+            nodeName = tag_pattern.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName, collector=collector)
         return self
 
-    def _buildAttributes(self, node, attrs, already_processed):
+    def buildAttributes(self, node, attrs, already_processed):
         pass
 
-    def _buildChildren(
-        self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None
+    def buildChildren(
+        self, child_, node, nodeName, fromsubclass=False, collector=None
     ):
-        if nodeName_ == "exchange":
-            obj_ = Exchange.factory(parent_object_=self)
-            obj_.build(child_, gds_collector_=gds_collector_)
-            self.exchange.append(obj_)
-            obj_.original_tagname_ = "exchange"
-        elif nodeName_ == "allocation":
-            obj_ = Allocation.factory(parent_object_=self)
-            obj_.build(child_, gds_collector_=gds_collector_)
-            self.allocation.append(obj_)
-            obj_.original_tagname_ = "allocation"
-        else:
-            content_ = self.gds_build_any(child_, "FlowData")
-            self.anytypeobjs_.append(content_)
+        if nodeName == "exchange":
+            obj = Exchange(parent_object=self)
+            obj.build(child_, collector=collector)
+            self.exchange.append(obj)
+            obj.original_tagname = "exchange"
+        elif nodeName == "allocation":
+            obj = Allocation(parent_object=self)
+            obj.build(child_, collector=collector)
+            self.allocation.append(obj)
+            obj.original_tagname = "allocation"
 
 
 # end class FlowData

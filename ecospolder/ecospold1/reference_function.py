@@ -1,11 +1,6 @@
-from ..ecospold_base import *
-
-
-def _cast(typ, value):
-    if typ is None or value is None:
-        return value
-    return typ(value)
-
+import sys
+sys.path.append('../')
+from ecospold_base import *
 
 class ReferenceFunction(EcospoldBase):
     """ReferenceFunction -- Contains the identifying information of a dataset including name (english and german), unit, classification (category, subCategory), etc..
@@ -72,77 +67,42 @@ class ReferenceFunction(EcospoldBase):
         statisticalClassification=None,
         formula=None,
         synonym=None,
-        gds_collector_=None,
-        **kwargs_
-    ):
-        self.gds_collector_ = gds_collector_
-        self.gds_elementtree_node_ = None
-        self.original_tagname_ = None
-        self.parent_object_ = kwargs_.get("parent_object_")
-        self.ns_prefix_ = None
-        self.datasetRelatesToProduct = _cast(bool, datasetRelatesToProduct)
-        self.datasetRelatesToProduct_nsprefix_ = None
-        self.name = _cast(None, name)
-        self.name_nsprefix_ = None
-        self.localName = _cast(None, localName)
-        self.localName_nsprefix_ = None
-        self.infrastructureProcess = _cast(bool, infrastructureProcess)
-        self.infrastructureProcess_nsprefix_ = None
-        self.amount = _cast(float, amount)
-        self.amount_nsprefix_ = None
-        self.unit = _cast(None, unit)
-        self.unit_nsprefix_ = None
-        self.category = _cast(None, category)
-        self.category_nsprefix_ = None
-        self.subCategory = _cast(None, subCategory)
-        self.subCategory_nsprefix_ = None
-        self.localCategory = _cast(None, localCategory)
-        self.localCategory_nsprefix_ = None
-        self.localSubCategory = _cast(None, localSubCategory)
-        self.localSubCategory_nsprefix_ = None
-        self.includedProcesses = _cast(None, includedProcesses)
-        self.includedProcesses_nsprefix_ = None
-        self.generalComment = _cast(None, generalComment)
-        self.generalComment_nsprefix_ = None
-        self.infrastructureIncluded = _cast(bool, infrastructureIncluded)
-        self.infrastructureIncluded_nsprefix_ = None
-        self.CASNumber = _cast(None, CASNumber)
-        self.CASNumber_nsprefix_ = None
-        self.statisticalClassification = _cast(int, statisticalClassification)
-        self.statisticalClassification_nsprefix_ = None
-        self.formula = _cast(None, formula)
-        self.formula_nsprefix_ = None
-        if synonym is None:
-            self.synonym = []
-        else:
-            self.synonym = synonym
-        self.synonym_nsprefix_ = None
+        collector=None,
+        **kwargs
+    ) -> None:
+        self.collector = collector
+        self.elementtree_node = None
+        self.original_tagname = None
+        self.parent_object = kwargs.get("parent_object")
+        self.datasetRelatesToProduct = cast_value_with_type(bool, datasetRelatesToProduct)
+        self.name = cast_value_with_type(None, name)
+        self.localName = cast_value_with_type(None, localName)
+        self.infrastructureProcess = cast_value_with_type(bool, infrastructureProcess)
+        self.amount = cast_value_with_type(float, amount)
+        self.unit = cast_value_with_type(None, unit)
+        self.category = cast_value_with_type(None, category)
+        self.subCategory = cast_value_with_type(None, subCategory)
+        self.localCategory = cast_value_with_type(None, localCategory)
+        self.localSubCategory = cast_value_with_type(None, localSubCategory)
+        self.includedProcesses = cast_value_with_type(None, includedProcesses)
+        self.generalComment = cast_value_with_type(None, generalComment)
+        self.infrastructureIncluded = cast_value_with_type(bool, infrastructureIncluded)
+        self.CASNumber = cast_value_with_type(None, CASNumber)
+        self.statisticalClassification = cast_value_with_type(int, statisticalClassification)
+        self.formula = cast_value_with_type(None, formula)
+        self.synonym = [] if synonym is None else synonym
 
-    def factory(*args_, **kwargs_):
-        if CurrentSubclassModule_ is not None:
-            subclass = getSubclassFromModule_(
-                CurrentSubclassModule_, ReferenceFunction
-            )
-            if subclass is not None:
-                return subclass(*args_, **kwargs_)
-        if ReferenceFunction.subclass:
-            return ReferenceFunction.subclass(*args_, **kwargs_)
-        else:
-            return ReferenceFunction(*args_, **kwargs_)
-
-    factory = staticmethod(factory)
-
-    def validate_TString80(self, value):
+    def validate_TString80(self, value) -> bool:
         result = True
         # Validate type TString80, a restriction on xsd:string.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and Validate_simpletypes
+            and self.collector is not None
         ):
             if not isinstance(value, str):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (str)'
                     % {
                         "value": value,
@@ -151,24 +111,24 @@ class ReferenceFunction(EcospoldBase):
                 )
                 return False
             if len(value) > 80:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd maxLength restriction on TString80'
                     % {"value": encode_str_2_3(value), "lineno": lineno}
                 )
                 result = False
         return result
 
-    def validate_TFloatNumber(self, value):
+    def validate_TFloatNumber(self, value) -> bool:
         # Validate type TFloatNumber, a restriction on xsd:double.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and Validate_simpletypes
+            and self.collector is not None
         ):
             if not isinstance(value, float):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (float)'
                     % {
                         "value": value,
@@ -178,16 +138,16 @@ class ReferenceFunction(EcospoldBase):
                 return False
             pass
 
-    def validate_TUnit(self, value):
+    def validate_TUnit(self, value) -> bool:
         # Validate type TUnit, a restriction on xsd:string.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and Validate_simpletypes
+            and self.collector is not None
         ):
             if not isinstance(value, str):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (str)'
                     % {
                         "value": value,
@@ -196,23 +156,23 @@ class ReferenceFunction(EcospoldBase):
                 )
                 return False
             if len(value) > 20:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd maxLength restriction on TUnit'
                     % {"value": encode_str_2_3(value), "lineno": lineno}
                 )
                 result = False
 
-    def validate_TCategoryName(self, value):
+    def validate_TCategoryName(self, value) -> bool:
         # Validate type TCategoryName, a restriction on xsd:string.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and Validate_simpletypes
+            and self.collector is not None
         ):
             if not isinstance(value, str):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (str)'
                     % {
                         "value": value,
@@ -221,30 +181,30 @@ class ReferenceFunction(EcospoldBase):
                 )
                 return False
             if len(value) > 40:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd maxLength restriction on TCategoryName'
                     % {"value": encode_str_2_3(value), "lineno": lineno}
                 )
                 result = False
             if len(value) < 0:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd minLength restriction on TCategoryName'
                     % {"value": encode_str_2_3(value), "lineno": lineno}
                 )
                 result = False
 
-    def validate_TString32000(self, value):
+    def validate_TString32000(self, value) -> bool:
         # Validate type TString32000, a restriction on xsd:string.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and Validate_simpletypes
+            and self.collector is not None
         ):
             if not isinstance(value, str):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (str)'
                     % {
                         "value": value,
@@ -253,23 +213,23 @@ class ReferenceFunction(EcospoldBase):
                 )
                 return False
             if len(value) > 32000:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd maxLength restriction on TString32000'
                     % {"value": encode_str_2_3(value), "lineno": lineno}
                 )
                 result = False
 
-    def validate_CASNumberType(self, value):
+    def validate_CASNumberType(self, value) -> bool:
         # Validate type CASNumberType, a restriction on xsd:string.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and Validate_simpletypes
+            and self.collector is not None
         ):
             if not isinstance(value, str):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (str)'
                     % {
                         "value": value,
@@ -278,16 +238,16 @@ class ReferenceFunction(EcospoldBase):
                 )
                 return False
             if len(value) > 11:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd maxLength restriction on CASNumberType'
                     % {"value": encode_str_2_3(value), "lineno": lineno}
                 )
                 result = False
-            if not self.gds_validate_simple_patterns(
+            if not self.validate_simple_patterns(
                 self.validate_CASNumberType_patterns_, value
             ):
-                self.gds_collector_.add_message(
+                self.collector.add_message(
                     'Value "%s" does not match xsd pattern restrictions: %s'
                     % (
                         encode_str_2_3(value),
@@ -297,16 +257,16 @@ class ReferenceFunction(EcospoldBase):
 
     validate_CASNumberType_patterns_ = [["^(\\d{1,6}-\\d{2,2}-\\d)$"]]
 
-    def validate_statisticalClassificationType(self, value):
+    def validate_statisticalClassificationType(self, value) -> bool:
         # Validate type statisticalClassificationType, a restriction on xsd:long.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and Validate_simpletypes
+            and self.collector is not None
         ):
             if not isinstance(value, int):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (int)'
                     % {
                         "value": value,
@@ -314,10 +274,10 @@ class ReferenceFunction(EcospoldBase):
                     }
                 )
                 return False
-            if not self.gds_validate_simple_patterns(
+            if not self.validate_simple_patterns(
                 self.validate_statisticalClassificationType_patterns_, value
             ):
-                self.gds_collector_.add_message(
+                self.collector.add_message(
                     'Value "%s" does not match xsd pattern restrictions: %s'
                     % (
                         encode_str_2_3(value),
@@ -327,16 +287,16 @@ class ReferenceFunction(EcospoldBase):
 
     validate_statisticalClassificationType_patterns_ = [["^(\\d{1,8})$"]]
 
-    def validate_TString40(self, value):
+    def validate_TString40(self, value) -> bool:
         # Validate type TString40, a restriction on xsd:string.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and Validate_simpletypes
+            and self.collector is not None
         ):
             if not isinstance(value, str):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (str)'
                     % {
                         "value": value,
@@ -345,14 +305,15 @@ class ReferenceFunction(EcospoldBase):
                 )
                 return False
             if len(value) > 40:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd maxLength restriction on TString40'
                     % {"value": encode_str_2_3(value), "lineno": lineno}
                 )
                 result = False
+                return result
 
-    def _hasContent(self):
+    def hasContent(self) -> bool:
         if self.synonym:
             return True
         else:
@@ -362,61 +323,56 @@ class ReferenceFunction(EcospoldBase):
         self,
         outfile,
         level,
-        namespaceprefix_="",
-        namespacedef_='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
-        name_="ReferenceFunction",
+        namespaceprefix="",
+        namespacedef='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
+        name="ReferenceFunction",
         pretty_print=True,
     ):
-        imported_ns_def_ = GenerateDSNamespaceDefs_.get("ReferenceFunction")
-        if imported_ns_def_ is not None:
-            namespacedef_ = imported_ns_def_
         if pretty_print:
-            eol_ = "\n"
+            eol = "\n"
         else:
-            eol_ = ""
-        if self.original_tagname_ is not None and name_ == "ReferenceFunction":
-            name_ = self.original_tagname_
-        if UseCapturedNS_ and self.ns_prefix_:
-            namespaceprefix_ = self.ns_prefix_ + ":"
+            eol = ""
+        if self.original_tagname is not None and name == "ReferenceFunction":
+            name = self.original_tagname
         showIndent(outfile, level, pretty_print)
         outfile.write(
             "<%s%s%s"
             % (
-                namespaceprefix_,
-                name_,
-                namespacedef_ and " " + namespacedef_ or "",
+                namespaceprefix,
+                name,
+                namespacedef and " " + namespacedef or "",
             )
         )
         already_processed = set()
-        self._exportAttributes(
+        self.exportAttributes(
             outfile,
             level,
             already_processed,
-            namespaceprefix_,
-            name_="ReferenceFunction",
+            namespaceprefix,
+            name="ReferenceFunction",
         )
-        if self._hasContent():
-            outfile.write(">%s" % (eol_,))
-            self._exportChildren(
+        if self.hasContent():
+            outfile.write(">%s" % (eol,))
+            self.exportChildren(
                 outfile,
                 level + 1,
-                namespaceprefix_,
-                namespacedef_,
-                name_="ReferenceFunction",
+                namespaceprefix,
+                namespacedef,
+                name="ReferenceFunction",
                 pretty_print=pretty_print,
             )
             showIndent(outfile, level, pretty_print)
-            outfile.write("</%s%s>%s" % (namespaceprefix_, name_, eol_))
+            outfile.write("</%s%s>%s" % (namespaceprefix, name, eol))
         else:
-            outfile.write("/>%s" % (eol_,))
+            outfile.write("/>%s" % (eol,))
 
-    def _exportAttributes(
+    def exportAttributes(
         self,
         outfile,
         level,
         already_processed,
-        namespaceprefix_="",
-        name_="ReferenceFunction",
+        namespaceprefix="",
+        name="ReferenceFunction",
     ):
         if (
             self.datasetRelatesToProduct is not None
@@ -425,7 +381,7 @@ class ReferenceFunction(EcospoldBase):
             already_processed.add("datasetRelatesToProduct")
             outfile.write(
                 ' datasetRelatesToProduct="%s"'
-                % self.gds_format_boolean(
+                % self.format_boolean(
                     self.datasetRelatesToProduct, input_name="datasetRelatesToProduct"
                 )
             )
@@ -434,8 +390,8 @@ class ReferenceFunction(EcospoldBase):
             outfile.write(
                 " name=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.name), input_name="name"
                         )
                     ),
@@ -446,8 +402,8 @@ class ReferenceFunction(EcospoldBase):
             outfile.write(
                 " localName=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.localName), input_name="localName"
                         )
                     ),
@@ -460,7 +416,7 @@ class ReferenceFunction(EcospoldBase):
             already_processed.add("infrastructureProcess")
             outfile.write(
                 ' infrastructureProcess="%s"'
-                % self.gds_format_boolean(
+                % self.format_boolean(
                     self.infrastructureProcess, input_name="infrastructureProcess"
                 )
             )
@@ -468,15 +424,15 @@ class ReferenceFunction(EcospoldBase):
             already_processed.add("amount")
             outfile.write(
                 ' amount="%s"'
-                % self.gds_format_double(self.amount, input_name="amount")
+                % self.format_double(self.amount, input_name="amount")
             )
         if self.unit is not None and "unit" not in already_processed:
             already_processed.add("unit")
             outfile.write(
                 " unit=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.unit), input_name="unit"
                         )
                     ),
@@ -487,8 +443,8 @@ class ReferenceFunction(EcospoldBase):
             outfile.write(
                 " category=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.category), input_name="category"
                         )
                     ),
@@ -499,8 +455,8 @@ class ReferenceFunction(EcospoldBase):
             outfile.write(
                 " subCategory=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.subCategory), input_name="subCategory"
                         )
                     ),
@@ -511,8 +467,8 @@ class ReferenceFunction(EcospoldBase):
             outfile.write(
                 " localCategory=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.localCategory), input_name="localCategory"
                         )
                     ),
@@ -526,8 +482,8 @@ class ReferenceFunction(EcospoldBase):
             outfile.write(
                 " localSubCategory=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.localSubCategory),
                             input_name="localSubCategory",
                         )
@@ -542,8 +498,8 @@ class ReferenceFunction(EcospoldBase):
             outfile.write(
                 " includedProcesses=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.includedProcesses),
                             input_name="includedProcesses",
                         )
@@ -558,8 +514,8 @@ class ReferenceFunction(EcospoldBase):
             outfile.write(
                 " generalComment=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.generalComment),
                             input_name="generalComment",
                         )
@@ -573,7 +529,7 @@ class ReferenceFunction(EcospoldBase):
             already_processed.add("infrastructureIncluded")
             outfile.write(
                 ' infrastructureIncluded="%s"'
-                % self.gds_format_boolean(
+                % self.format_boolean(
                     self.infrastructureIncluded, input_name="infrastructureIncluded"
                 )
             )
@@ -582,8 +538,8 @@ class ReferenceFunction(EcospoldBase):
             outfile.write(
                 " CASNumber=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.CASNumber), input_name="CASNumber"
                         )
                     ),
@@ -596,7 +552,7 @@ class ReferenceFunction(EcospoldBase):
             already_processed.add("statisticalClassification")
             outfile.write(
                 ' statisticalClassification="%s"'
-                % self.gds_format_integer(
+                % self.format_integer(
                     self.statisticalClassification,
                     input_name="statisticalClassification",
                 )
@@ -606,63 +562,57 @@ class ReferenceFunction(EcospoldBase):
             outfile.write(
                 " formula=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.formula), input_name="formula"
                         )
                     ),
                 )
             )
 
-    def _exportChildren(
+    def exportChildren(
         self,
         outfile,
         level,
-        namespaceprefix_="",
-        namespacedef_='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
-        name_="ReferenceFunction",
-        fromsubclass_=False,
+        namespaceprefix="",
+        namespacedef='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
+        name="ReferenceFunction",
+        fromsubclass=False,
         pretty_print=True,
     ):
         if pretty_print:
-            eol_ = "\n"
+            eol = "\n"
         else:
-            eol_ = ""
+            eol = ""
         for synonym_ in self.synonym:
-            namespaceprefix_ = (
-                self.synonym_nsprefix_ + ":"
-                if (UseCapturedNS_ and self.synonym_nsprefix_)
-                else ""
-            )
             showIndent(outfile, level, pretty_print)
             outfile.write(
                 "<%ssynonym>%s</%ssynonym>%s"
                 % (
-                    namespaceprefix_,
-                    self.gds_encode(
-                        self.gds_format_string(
+                    namespaceprefix,
+                    self.encode(
+                        self.format_string(
                             quote_xml(synonym_), input_name="synonym"
                         )
                     ),
-                    namespaceprefix_,
-                    eol_,
+                    namespaceprefix,
+                    eol,
                 )
             )
 
-    def build(self, node, gds_collector_=None):
-        self.gds_collector_ = gds_collector_
+    def build(self, node, collector=None):
+        self.collector = collector
         if SaveElementTreeNode:
-            self.gds_elementtree_node_ = node
+            self.elementtree_node = node
         already_processed = set()
-        self.ns_prefix_ = node.prefix
-        self._buildAttributes(node, node.attrib, already_processed)
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self._buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
+            nodeName = tag_pattern.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName, collector=collector)
         return self
 
-    def _buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_("datasetRelatesToProduct", node)
+    def buildAttributes(self, node, attrs, already_processed):
+        value = find_attr_value("datasetRelatesToProduct", node)
         if value is not None and "datasetRelatesToProduct" not in already_processed:
             already_processed.add("datasetRelatesToProduct")
             if value in ("true", "1"):
@@ -671,17 +621,17 @@ class ReferenceFunction(EcospoldBase):
                 self.datasetRelatesToProduct = False
             else:
                 raise_parse_error(node, "Bad boolean attribute")
-        value = find_attr_value_("name", node)
+        value = find_attr_value("name", node)
         if value is not None and "name" not in already_processed:
             already_processed.add("name")
             self.name = value
             self.validate_TString80(self.name)  # validate type TString80
-        value = find_attr_value_("localName", node)
+        value = find_attr_value("localName", node)
         if value is not None and "localName" not in already_processed:
             already_processed.add("localName")
             self.localName = value
             self.validate_TString80(self.localName)  # validate type TString80
-        value = find_attr_value_("infrastructureProcess", node)
+        value = find_attr_value("infrastructureProcess", node)
         if value is not None and "infrastructureProcess" not in already_processed:
             already_processed.add("infrastructureProcess")
             if value in ("true", "1"):
@@ -690,56 +640,56 @@ class ReferenceFunction(EcospoldBase):
                 self.infrastructureProcess = False
             else:
                 raise_parse_error(node, "Bad boolean attribute")
-        value = find_attr_value_("amount", node)
+        value = find_attr_value("amount", node)
         if value is not None and "amount" not in already_processed:
             already_processed.add("amount")
-            value = self.gds_parse_double(value, node, "amount")
+            value = self.parse_double(value, node, "amount")
             self.amount = value
             self.validate_TFloatNumber(self.amount)  # validate type TFloatNumber
-        value = find_attr_value_("unit", node)
+        value = find_attr_value("unit", node)
         if value is not None and "unit" not in already_processed:
             already_processed.add("unit")
             self.unit = value
             self.validate_TUnit(self.unit)  # validate type TUnit
-        value = find_attr_value_("category", node)
+        value = find_attr_value("category", node)
         if value is not None and "category" not in already_processed:
             already_processed.add("category")
             self.category = value
             self.validate_TCategoryName(self.category)  # validate type TCategoryName
-        value = find_attr_value_("subCategory", node)
+        value = find_attr_value("subCategory", node)
         if value is not None and "subCategory" not in already_processed:
             already_processed.add("subCategory")
             self.subCategory = value
             self.validate_TCategoryName(self.subCategory)  # validate type TCategoryName
-        value = find_attr_value_("localCategory", node)
+        value = find_attr_value("localCategory", node)
         if value is not None and "localCategory" not in already_processed:
             already_processed.add("localCategory")
             self.localCategory = value
             self.validate_TCategoryName(
                 self.localCategory
             )  # validate type TCategoryName
-        value = find_attr_value_("localSubCategory", node)
+        value = find_attr_value("localSubCategory", node)
         if value is not None and "localSubCategory" not in already_processed:
             already_processed.add("localSubCategory")
             self.localSubCategory = value
             self.validate_TCategoryName(
                 self.localSubCategory
             )  # validate type TCategoryName
-        value = find_attr_value_("includedProcesses", node)
+        value = find_attr_value("includedProcesses", node)
         if value is not None and "includedProcesses" not in already_processed:
             already_processed.add("includedProcesses")
             self.includedProcesses = value
             self.validate_TString32000(
                 self.includedProcesses
             )  # validate type TString32000
-        value = find_attr_value_("generalComment", node)
+        value = find_attr_value("generalComment", node)
         if value is not None and "generalComment" not in already_processed:
             already_processed.add("generalComment")
             self.generalComment = value
             self.validate_TString32000(
                 self.generalComment
             )  # validate type TString32000
-        value = find_attr_value_("infrastructureIncluded", node)
+        value = find_attr_value("infrastructureIncluded", node)
         if value is not None and "infrastructureIncluded" not in already_processed:
             already_processed.add("infrastructureIncluded")
             if value in ("true", "1"):
@@ -748,35 +698,34 @@ class ReferenceFunction(EcospoldBase):
                 self.infrastructureIncluded = False
             else:
                 raise_parse_error(node, "Bad boolean attribute")
-        value = find_attr_value_("CASNumber", node)
+        value = find_attr_value("CASNumber", node)
         if value is not None and "CASNumber" not in already_processed:
             already_processed.add("CASNumber")
             self.CASNumber = value
             self.validate_CASNumberType(self.CASNumber)  # validate type CASNumberType
-        value = find_attr_value_("statisticalClassification", node)
+        value = find_attr_value("statisticalClassification", node)
         if value is not None and "statisticalClassification" not in already_processed:
             already_processed.add("statisticalClassification")
-            self.statisticalClassification = self.gds_parse_integer(
+            self.statisticalClassification = self.parse_integer(
                 value, node, "statisticalClassification"
             )
             self.validate_statisticalClassificationType(
                 self.statisticalClassification
             )  # validate type statisticalClassificationType
-        value = find_attr_value_("formula", node)
+        value = find_attr_value("formula", node)
         if value is not None and "formula" not in already_processed:
             already_processed.add("formula")
             self.formula = value
             self.validate_TString40(self.formula)  # validate type TString40
 
-    def _buildChildren(
-        self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None
+    def buildChildren(
+        self, child, node, nodeName, fromsubclass=False, collector=None
     ):
-        if nodeName_ == "synonym":
-            value_ = child_.text
-            value_ = self.gds_parse_string(value_, node, "synonym")
-            value_ = self.gds_validate_string(value_, node, "synonym")
-            self.synonym.append(value_)
-            self.synonym_nsprefix_ = child_.prefix
+        if nodeName == "synonym":
+            value = child.text
+            value = self.parse_string(value)
+            value = self.validate_string(value)
+            self.synonym.append(value)
             # validate type TString80
             self.validate_TString80(self.synonym[-1])
 

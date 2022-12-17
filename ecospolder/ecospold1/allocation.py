@@ -1,11 +1,12 @@
-from ..ecospold_base import EcospoldBase
+import sys
+sys.path.append('../')
 
+from ecospold_base import *
 
 def _cast(typ, value):
     if typ is None or value is None:
         return value
     return typ(value)
-
 
 class Allocation(EcospoldBase):
     """Allocation -- Contains all information about allocation procedure, allocation parameters and allocation factors applied on a multi-output process.
@@ -31,44 +32,29 @@ class Allocation(EcospoldBase):
         fraction=None,
         explanations=None,
         referenceToInputOutput=None,
-        gds_collector_=None,
-        **kwargs_
-    ):
-        self.gds_collector_ = gds_collector_
-        self.gds_elementtree_node_ = None
-        self.original_tagname_ = None
-        self.parent_object_ = kwargs_.get("parent_object_")
-        self.ns_prefix_ = None
-        self.referenceToCoProduct = _cast(int, referenceToCoProduct)
-        self.referenceToCoProduct_nsprefix_ = None
-        self.allocationMethod = _cast(int, allocationMethod)
-        self.allocationMethod_nsprefix_ = None
-        self.fraction = _cast(float, fraction)
-        self.fraction_nsprefix_ = None
-        self.explanations = _cast(None, explanations)
-        self.explanations_nsprefix_ = None
-        if referenceToInputOutput is None:
-            self.referenceToInputOutput = []
-        else:
-            self.referenceToInputOutput = referenceToInputOutput
-        self.referenceToInputOutput_nsprefix_ = None
+        collector=None,
+        **kwargs
+    ) -> None:
+        self.collector = collector
+        self.elementtree_node = None
+        self.original_tagname = None
+        self.parent_object = kwargs.get("parent_object")
+        self.referenceToCoProduct = cast_value_with_type(int, referenceToCoProduct)
+        self.allocationMethod = cast_value_with_type(int, allocationMethod)
+        self.fraction = cast_value_with_type(float, fraction)
+        self.explanations = cast_value_with_type(None, explanations)
+        self.referenceToInputOutput = [] if referenceToInputOutput is None else referenceToInputOutput
 
-    def factory(*args_, **kwargs_):
-        return Allocation(*args_, **kwargs_)
-
-    factory = staticmethod(factory)
-
-    def validate_TIndexNumber(self, value):
+    def validate_TIndexNumber(self, value) -> bool:
         result = True
         # Validate type TIndexNumber, a restriction on xsd:int.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and self.collector is not None
         ):
             if not isinstance(value, int):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (int)'
                     % {
                         "value": value,
@@ -77,24 +63,23 @@ class Allocation(EcospoldBase):
                 )
                 return False
             if value < 1:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd minInclusive restriction on TIndexNumber'
                     % {"value": value, "lineno": lineno}
                 )
                 result = False
         return result
 
-    def validate_allocationMethodType(self, value):
+    def validate_allocationMethodType(self, value) -> bool:
         # Validate type allocationMethodType, a restriction on xsd:integer.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and self.collector is not None
         ):
             if not isinstance(value, int):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (int)'
                     % {
                         "value": value,
@@ -103,30 +88,29 @@ class Allocation(EcospoldBase):
                 )
                 return False
             if value < -1:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd minInclusive restriction on allocationMethodType'
                     % {"value": value, "lineno": lineno}
                 )
                 result = False
             if value > 2:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd maxInclusive restriction on allocationMethodType'
                     % {"value": value, "lineno": lineno}
                 )
                 result = False
 
-    def validate_TString32000(self, value):
+    def validate_TString32000(self, value) -> bool:
         # Validate type TString32000, a restriction on xsd:string.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and self.collector is not None
         ):
             if not isinstance(value, str):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (str)'
                     % {
                         "value": value,
@@ -135,14 +119,14 @@ class Allocation(EcospoldBase):
                 )
                 return False
             if len(value) > 32000:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd maxLength restriction on TString32000'
                     % {"value": encode_str_2_3(value), "lineno": lineno}
                 )
                 result = False
 
-    def _hasContent(self):
+    def hasContent(self) -> bool:
         if self.referenceToInputOutput:
             return True
         else:
@@ -152,58 +136,53 @@ class Allocation(EcospoldBase):
         self,
         outfile,
         level,
-        namespaceprefix_="",
-        namespacedef_='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
-        name_="Allocation",
+        namespaceprefix="",
+        namespacedef='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
+        name="Allocation",
         pretty_print=True,
-    ):
-        imported_ns_def_ = GenerateDSNamespaceDefs_.get("Allocation")
-        if imported_ns_def_ is not None:
-            namespacedef_ = imported_ns_def_
+    ) -> None:
         if pretty_print:
-            eol_ = "\n"
+            eol = "\n"
         else:
-            eol_ = ""
-        if self.original_tagname_ is not None and name_ == "Allocation":
-            name_ = self.original_tagname_
-        if UseCapturedNS_ and self.ns_prefix_:
-            namespaceprefix_ = self.ns_prefix_ + ":"
+            eol = ""
+        if self.original_tagname is not None and name == "Allocation":
+            name = self.original_tagname
         showIndent(outfile, level, pretty_print)
         outfile.write(
             "<%s%s%s"
             % (
-                namespaceprefix_,
-                name_,
-                namespacedef_ and " " + namespacedef_ or "",
+                namespaceprefix,
+                name,
+                namespacedef and " " + namespacedef or "",
             )
         )
         already_processed = set()
-        self._exportAttributes(
-            outfile, level, already_processed, namespaceprefix_, name_="Allocation"
+        self.exportAttributes(
+            outfile, level, already_processed, namespaceprefix, name="Allocation"
         )
-        if self._hasContent():
-            outfile.write(">%s" % (eol_,))
-            self._exportChildren(
+        if self.hasContent():
+            outfile.write(">%s" % (eol,))
+            self.exportChildren(
                 outfile,
                 level + 1,
-                namespaceprefix_,
-                namespacedef_,
-                name_="Allocation",
+                namespaceprefix,
+                namespacedef,
+                name="Allocation",
                 pretty_print=pretty_print,
             )
             showIndent(outfile, level, pretty_print)
-            outfile.write("</%s%s>%s" % (namespaceprefix_, name_, eol_))
+            outfile.write("</%s%s>%s" % (namespaceprefix, name, eol))
         else:
-            outfile.write("/>%s" % (eol_,))
+            outfile.write("/>%s" % (eol,))
 
-    def _exportAttributes(
+    def exportAttributes(
         self,
         outfile,
         level,
         already_processed,
-        namespaceprefix_="",
-        name_="Allocation",
-    ):
+        namespaceprefix="",
+        name="Allocation",
+    ) -> None:
         if (
             self.referenceToCoProduct is not None
             and "referenceToCoProduct" not in already_processed
@@ -211,7 +190,7 @@ class Allocation(EcospoldBase):
             already_processed.add("referenceToCoProduct")
             outfile.write(
                 ' referenceToCoProduct="%s"'
-                % self.gds_format_integer(
+                % self.format_integer(
                     self.referenceToCoProduct, input_name="referenceToCoProduct"
                 )
             )
@@ -219,7 +198,7 @@ class Allocation(EcospoldBase):
             already_processed.add("allocationMethod")
             outfile.write(
                 ' allocationMethod="%s"'
-                % self.gds_format_integer(
+                % self.format_integer(
                     self.allocationMethod, input_name="allocationMethod"
                 )
             )
@@ -227,105 +206,97 @@ class Allocation(EcospoldBase):
             already_processed.add("fraction")
             outfile.write(
                 ' fraction="%s"'
-                % self.gds_format_float(self.fraction, input_name="fraction")
+                % self.format_float(self.fraction, input_name="fraction")
             )
         if self.explanations is not None and "explanations" not in already_processed:
             already_processed.add("explanations")
             outfile.write(
                 " explanations=%s"
                 % (
-                    self.gds_encode(
-                        self.gds_format_string(
+                    self.encode(
+                        self.format_string(
                             quote_attrib(self.explanations), input_name="explanations"
                         )
                     ),
                 )
             )
 
-    def _exportChildren(
+    def exportChildren(
         self,
         outfile,
         level,
-        namespaceprefix_="",
-        namespacedef_='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
-        name_="Allocation",
-        fromsubclass_=False,
+        namespaceprefix="",
+        namespacedef='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
+        name="Allocation",
+        fromsubclass=False,
         pretty_print=True,
-    ):
+    ) -> None:
         if pretty_print:
-            eol_ = "\n"
+            eol = "\n"
         else:
-            eol_ = ""
+            eol = ""
         for referenceToInputOutput_ in self.referenceToInputOutput:
-            namespaceprefix_ = (
-                self.referenceToInputOutput_nsprefix_ + ":"
-                if (UseCapturedNS_ and self.referenceToInputOutput_nsprefix_)
-                else ""
-            )
             showIndent(outfile, level, pretty_print)
             outfile.write(
                 "<%sreferenceToInputOutput>%s</%sreferenceToInputOutput>%s"
                 % (
-                    namespaceprefix_,
-                    self.gds_format_integer(
+                    namespaceprefix,
+                    self.format_integer(
                         referenceToInputOutput_, input_name="referenceToInputOutput"
                     ),
-                    namespaceprefix_,
-                    eol_,
+                    namespaceprefix,
+                    eol,
                 )
             )
 
-    def build(self, node, gds_collector_=None):
-        self.gds_collector_ = gds_collector_
+    def build(self, node, collector=None) -> None:
+        self.collector = collector
         if SaveElementTreeNode:
-            self.gds_elementtree_node_ = node
+            self.elementtree_node = node
         already_processed = set()
-        self.ns_prefix_ = node.prefix
-        self._buildAttributes(node, node.attrib, already_processed)
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self._buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
-        return self
+            nodeName = tag_pattern.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName, collector=collector)
 
-    def _buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_("referenceToCoProduct", node)
+    def buildAttributes(self, node, attrs, already_processed) -> None:
+        value = find_attr_value("referenceToCoProduct", node)
         if value is not None and "referenceToCoProduct" not in already_processed:
             already_processed.add("referenceToCoProduct")
-            self.referenceToCoProduct = self.gds_parse_integer(
+            self.referenceToCoProduct = self.parse_integer(
                 value, node, "referenceToCoProduct"
             )
             self.validate_TIndexNumber(
                 self.referenceToCoProduct
             )  # validate type TIndexNumber
-        value = find_attr_value_("allocationMethod", node)
+        value = find_attr_value("allocationMethod", node)
         if value is not None and "allocationMethod" not in already_processed:
             already_processed.add("allocationMethod")
-            self.allocationMethod = self.gds_parse_integer(
+            self.allocationMethod = self.parse_integer(
                 value, node, "allocationMethod"
             )
             self.validate_allocationMethodType(
                 self.allocationMethod
             )  # validate type allocationMethodType
-        value = find_attr_value_("fraction", node)
+        value = find_attr_value("fraction", node)
         if value is not None and "fraction" not in already_processed:
             already_processed.add("fraction")
-            value = self.gds_parse_float(value, node, "fraction")
+            value = self.parse_float(value, node, "fraction")
             self.fraction = value
-        value = find_attr_value_("explanations", node)
+        value = find_attr_value("explanations", node)
         if value is not None and "explanations" not in already_processed:
             already_processed.add("explanations")
             self.explanations = value
             self.validate_TString32000(self.explanations)  # validate type TString32000
 
-    def _buildChildren(
-        self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None
-    ):
-        if nodeName_ == "referenceToInputOutput" and child_.text:
-            sval_ = child_.text
-            ival_ = self.gds_parse_integer(sval_, node, "referenceToInputOutput")
-            ival_ = self.gds_validate_integer(ival_, node, "referenceToInputOutput")
-            self.referenceToInputOutput.append(ival_)
-            self.referenceToInputOutput_nsprefix_ = child_.prefix
+    def buildChildren(
+        self, child, node, nodeName, fromsubclass=False, collector=None
+    ) -> None:
+        if nodeName == "referenceToInputOutput" and child.text:
+            sval = child.text
+            ival = self.parse_integer(sval, node, "referenceToInputOutput")
+            ival = self.validate_integer(ival, node, "referenceToInputOutput")
+            self.referenceToInputOutput.append(ival)
             # validate type TIndexNumber
             self.validate_TIndexNumber(self.referenceToInputOutput[-1])
 

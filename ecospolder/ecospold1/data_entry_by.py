@@ -1,10 +1,6 @@
-from ..ecospold_base import *
-
-
-def _cast(typ, value):
-    if typ is None or value is None:
-        return value
-    return typ(value)
+import sys
+sys.path.append('../')
+from ecospold_base import *
 
 
 class DataEntryBy(EcospoldBase):
@@ -15,33 +11,25 @@ class DataEntryBy(EcospoldBase):
     """
 
     def __init__(
-        self, person=None, qualityNetwork=None, gds_collector_=None, **kwargs_
-    ):
-        self.gds_collector_ = gds_collector_
-        self.gds_elementtree_node_ = None
-        self.original_tagname_ = None
-        self.parent_object_ = kwargs_.get("parent_object_")
-        self.ns_prefix_ = ""
-        self.person = _cast(int, person)
-        self.person_nsprefix_ = None
-        self.qualityNetwork = _cast(int, qualityNetwork)
-        self.qualityNetwork_nsprefix_ = None
+        self, person=None, qualityNetwork=None, collector=None, **kwargs
+    ) -> None:
+        self.collector = collector
+        self.elementtree_node = None
+        self.original_tagname = None
+        self.parent_object = kwargs.get("parent_object")
+        self.person = cast_value_with_type(int, person)
+        self.qualityNetwork = cast_value_with_type(int, qualityNetwork)
 
-    def factory(*args_, **kwargs_):
-        return DataEntryBy(*args_, **kwargs_)
-
-    factory = staticmethod(factory)
-
-    def validate_TIndexNumber(self, value):
+    def validate_TIndexNumber(self, value) -> bool:
         # Validate type TIndexNumber, a restriction on xsd:int.
         if (
             value is not None
-            and Validate_simpletypes_
-            and self.gds_collector_ is not None
+            and Validate_simpletypes
+            and self.collector is not None
         ):
             if not isinstance(value, int):
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s is not of the correct base simple type (int)'
                     % {
                         "value": value,
@@ -50,14 +38,14 @@ class DataEntryBy(EcospoldBase):
                 )
                 return False
             if value < 1:
-                lineno = self.gds_get_node_lineno_()
-                self.gds_collector_.add_message(
+                lineno = self.get_node_lineno()
+                self.collector.add_message(
                     'Value "%(value)s"%(lineno)s does not match xsd minInclusive restriction on TIndexNumber'
                     % {"value": value, "lineno": lineno}
                 )
                 result = False
 
-    def _hasContent(self):
+    def hasContent(self) -> bool:
         if ():
             return True
         else:
@@ -67,62 +55,57 @@ class DataEntryBy(EcospoldBase):
         self,
         outfile,
         level,
-        namespaceprefix_="",
-        namespacedef_='xmlns:es="http://www.EcoInvent.org/EcoSpold01"',
-        name_="DataEntryBy",
+        namespaceprefix="",
+        namespacedef='xmlns:es="http://www.EcoInvent.org/EcoSpold01"',
+        name="DataEntryBy",
         pretty_print=True,
-    ):
-        imported_ns_def_ = GenerateDSNamespaceDefs_.get("DataEntryBy")
-        if imported_ns_def_ is not None:
-            namespacedef_ = imported_ns_def_
+    ) -> None:
         if pretty_print:
-            eol_ = "\n"
+            eol = "\n"
         else:
-            eol_ = ""
-        if self.original_tagname_ is not None and name_ == "DataEntryBy":
-            name_ = self.original_tagname_
-        if UseCapturedNS_ and self.ns_prefix_:
-            namespaceprefix_ = self.ns_prefix_ + ":"
+            eol = ""
+        if self.original_tagname is not None and name == "DataEntryBy":
+            name = self.original_tagname
         showIndent(outfile, level, pretty_print)
         outfile.write(
             "<%s%s%s"
             % (
-                namespaceprefix_,
-                name_,
-                namespacedef_ and " " + namespacedef_ or "",
+                namespaceprefix,
+                name,
+                namespacedef and " " + namespacedef or "",
             )
         )
         already_processed = set()
-        self._exportAttributes(
-            outfile, level, already_processed, namespaceprefix_, name_="DataEntryBy"
+        self.exportAttributes(
+            outfile, level, already_processed, namespaceprefix, name="DataEntryBy"
         )
-        if self._hasContent():
-            outfile.write(">%s" % (eol_,))
-            self._exportChildren(
+        if self.hasContent():
+            outfile.write(">%s" % (eol,))
+            self.exportChildren(
                 outfile,
                 level + 1,
-                namespaceprefix_,
-                namespacedef_,
-                name_="DataEntryBy",
+                namespaceprefix,
+                namespacedef,
+                name="DataEntryBy",
                 pretty_print=pretty_print,
             )
-            outfile.write("</%s%s>%s" % (namespaceprefix_, name_, eol_))
+            outfile.write("</%s%s>%s" % (namespaceprefix, name, eol))
         else:
-            outfile.write("/>%s" % (eol_,))
+            outfile.write("/>%s" % (eol,))
 
-    def _exportAttributes(
+    def exportAttributes(
         self,
         outfile,
         level,
         already_processed,
-        namespaceprefix_="",
-        name_="DataEntryBy",
-    ):
+        namespaceprefix="",
+        name="DataEntryBy",
+    ) -> None:
         if self.person is not None and "person" not in already_processed:
             already_processed.add("person")
             outfile.write(
                 ' person="%s"'
-                % self.gds_format_integer(self.person, input_name="person")
+                % self.format_integer(self.person, input_name="person")
             )
         if (
             self.qualityNetwork is not None
@@ -131,49 +114,47 @@ class DataEntryBy(EcospoldBase):
             already_processed.add("qualityNetwork")
             outfile.write(
                 ' qualityNetwork="%s"'
-                % self.gds_format_integer(
+                % self.format_integer(
                     self.qualityNetwork, input_name="qualityNetwork"
                 )
             )
 
-    def _exportChildren(
+    def exportChildren(
         self,
         outfile,
         level,
-        namespaceprefix_="",
-        namespacedef_='xmlns:es="http://www.EcoInvent.org/EcoSpold01"',
-        name_="DataEntryBy",
-        fromsubclass_=False,
+        namespaceprefix="",
+        namespacedef='xmlns:es="http://www.EcoInvent.org/EcoSpold01"',
+        name="DataEntryBy",
+        fromsubclass=False,
         pretty_print=True,
-    ):
+    ) -> None:
         pass
 
-    def build(self, node, gds_collector_=None):
-        self.gds_collector_ = gds_collector_
+    def build(self, node, collector=None) -> None:
+        self.collector = collector
         if SaveElementTreeNode:
-            self.gds_elementtree_node_ = node
+            self.elementtree_node = node
         already_processed = set()
-        self.ns_prefix_ = node.prefix
-        self._buildAttributes(node, node.attrib, already_processed)
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self._buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
-        return self
+            nodeName = tag_pattern.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName, collector=collector)
 
-    def _buildAttributes(self, node, attrs, already_processed):
-        value = find_attr_value_("person", node)
+    def buildAttributes(self, node, attrs, already_processed) -> None:
+        value = find_attr_value("person", node)
         if value is not None and "person" not in already_processed:
             already_processed.add("person")
-            self.person = self.gds_parse_integer(value, node, "person")
+            self.person = self.parse_integer(value, node, "person")
             self.validate_TIndexNumber(self.person)  # validate type TIndexNumber
-        value = find_attr_value_("qualityNetwork", node)
+        value = find_attr_value("qualityNetwork", node)
         if value is not None and "qualityNetwork" not in already_processed:
             already_processed.add("qualityNetwork")
-            self.qualityNetwork = self.gds_parse_integer(value, node, "qualityNetwork")
+            self.qualityNetwork = self.parse_integer(value, node, "qualityNetwork")
 
-    def _buildChildren(
-        self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None
-    ):
+    def buildChildren(
+        self, child_, node, nodeName, fromsubclass=False, collector=None
+    ) -> None:
         pass
 
 

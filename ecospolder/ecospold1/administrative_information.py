@@ -1,13 +1,9 @@
 from data_entry_by import DataEntryBy
 from data_generator_and_publication import DataGeneratorAndPublication
-from ..ecospold_base import *
+import sys
+sys.path.append('../')
+from ecospold_base import *
 from person import Person
-
-
-def _cast(typ, value):
-    if typ is None or value is None:
-        return value
-    return typ(value)
 
 
 class AdministrativeInformation(EcospoldBase):
@@ -28,41 +24,18 @@ class AdministrativeInformation(EcospoldBase):
         dataEntryBy=None,
         dataGeneratorAndPublication=None,
         person=None,
-        gds_collector_=None,
-        **kwargs_
-    ):
-        self.gds_collector_ = gds_collector_
-        self.gds_elementtree_node_ = None
-        self.original_tagname_ = None
-        self.parent_object_ = kwargs_.get("parent_object_")
-        self.ns_prefix_ = None
+        collector=None,
+        **kwargs
+    ) -> None:
+        self.collector = collector
+        self.elementtree_node = None
+        self.original_tagname = None
+        self.parent_object = kwargs.get("parent_object")
         self.dataEntryBy = dataEntryBy
-        self.dataEntryBy_nsprefix_ = ""
         self.dataGeneratorAndPublication = dataGeneratorAndPublication
-        self.dataGeneratorAndPublication_nsprefix_ = ""
-        if person is None:
-            self.person = []
-        else:
-            self.person = person
-        self.person_nsprefix_ = ""
+        self.person = [] if person is None else person
 
-    """ Create a new AdministrativeInformation instance.
-
-        static method
-
-    Args:
-        * *args* (dict): The demand or functional unit. Needs to be a dictionary to indicate amounts, e.g. ``{7: 2.5}``.
-        * *method* (tuple, optional): LCIA Method tuple, e.g. ``("My", "great", "LCIA", "method")``. Can be omitted if only interested in calculating the life cycle inventory.
-    Returns:
-        A new AdministrativeInformation object
-    """
-
-    def factory(*args_, **kwargs_):
-        return AdministrativeInformation(*args_, **kwargs_)
-
-    factory = staticmethod(factory)
-
-    def _hasContent(self):
+    def hasContent(self) -> bool:
         if (
             self.dataEntryBy is not None
             or self.dataGeneratorAndPublication is not None
@@ -76,154 +49,132 @@ class AdministrativeInformation(EcospoldBase):
         self,
         outfile,
         level,
-        namespaceprefix_="",
-        namespacedef_='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
-        name_="AdministrativeInformation",
+        namespaceprefix="",
+        namespacedef='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
+        name="AdministrativeInformation",
         pretty_print=True,
-    ):
-        imported_ns_def_ = GenerateDSNamespaceDefs_.get("AdministrativeInformation")
-        if imported_ns_def_ is not None:
-            namespacedef_ = imported_ns_def_
+    ) -> None:
         if pretty_print:
-            eol_ = "\n"
+            eol = "\n"
         else:
-            eol_ = ""
-        if self.original_tagname_ is not None and name_ == "AdministrativeInformation":
-            name_ = self.original_tagname_
-        if UseCapturedNS_ and self.ns_prefix_:
-            namespaceprefix_ = self.ns_prefix_ + ":"
+            eol = ""
+        if self.original_tagname is not None and name == "AdministrativeInformation":
+            name = self.original_tagname
         showIndent(outfile, level, pretty_print)
         outfile.write(
             "<%s%s%s"
             % (
-                namespaceprefix_,
-                name_,
-                namespacedef_ and " " + namespacedef_ or "",
+                namespaceprefix,
+                name,
+                namespacedef and " " + namespacedef or "",
             )
         )
         already_processed = set()
-        self._exportAttributes(
+        self.exportAttributes(
             outfile,
             level,
             already_processed,
-            namespaceprefix_,
-            name_="AdministrativeInformation",
+            namespaceprefix,
+            name="AdministrativeInformation",
         )
-        if self._hasContent():
-            outfile.write(">%s" % (eol_,))
-            self._exportChildren(
+        if self.hasContent():
+            outfile.write(">%s" % (eol,))
+            self.exportChildren(
                 outfile,
                 level + 1,
-                namespaceprefix_,
-                namespacedef_,
-                name_="AdministrativeInformation",
+                namespaceprefix,
+                namespacedef,
+                name="AdministrativeInformation",
                 pretty_print=pretty_print,
             )
             showIndent(outfile, level, pretty_print)
-            outfile.write("</%s%s>%s" % (namespaceprefix_, name_, eol_))
+            outfile.write("</%s%s>%s" % (namespaceprefix, name, eol))
         else:
-            outfile.write("/>%s" % (eol_,))
+            outfile.write("/>%s" % (eol,))
 
-    def _exportAttributes(
+    def exportAttributes(
         self,
         outfile,
         level,
         already_processed,
-        namespaceprefix_="",
-        name_="AdministrativeInformation",
-    ):
+        namespaceprefix="",
+        name="AdministrativeInformation",
+    ) -> None:
         pass
 
-    def _exportChildren(
+    def exportChildren(
         self,
         outfile,
         level,
-        namespaceprefix_="",
-        namespacedef_='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
-        name_="AdministrativeInformation",
-        fromsubclass_=False,
+        namespaceprefix="",
+        namespacedef='xmlns:es="http://www.EcoInvent.org/EcoSpold01" xmlns:None="http://www.EcoInvent.org/EcoSpold01" ',
+        name="AdministrativeInformation",
+        fromsubclass=False,
         pretty_print=True,
-    ):
+    ) -> None:
         if pretty_print:
-            eol_ = "\n"
+            eol = "\n"
         else:
-            eol_ = ""
+            eol = ""
         if self.dataEntryBy is not None:
-            namespaceprefix_ = (
-                self.dataEntryBy_nsprefix_ + ":"
-                if (UseCapturedNS_ and self.dataEntryBy_nsprefix_)
-                else ""
-            )
             self.dataEntryBy.export(
                 outfile,
                 level,
-                namespaceprefix_,
-                namespacedef_="",
-                name_="dataEntryBy",
+                namespaceprefix,
+                namespacedef="",
+                name="dataEntryBy",
                 pretty_print=pretty_print,
             )
         if self.dataGeneratorAndPublication is not None:
-            namespaceprefix_ = (
-                self.dataGeneratorAndPublication_nsprefix_ + ":"
-                if (UseCapturedNS_ and self.dataGeneratorAndPublication_nsprefix_)
-                else ""
-            )
             self.dataGeneratorAndPublication.export(
                 outfile,
                 level,
-                namespaceprefix_,
-                namespacedef_="",
-                name_="dataGeneratorAndPublication",
+                namespaceprefix,
+                namespacedef="",
+                name="dataGeneratorAndPublication",
                 pretty_print=pretty_print,
             )
-        for person_ in self.person:
-            namespaceprefix_ = (
-                self.person_nsprefix_ + ":"
-                if (UseCapturedNS_ and self.person_nsprefix_)
-                else ""
-            )
-            person_.export(
+        for one_person in self.person:
+            one_person.export(
                 outfile,
                 level,
-                namespaceprefix_,
-                namespacedef_="",
-                name_="person",
+                namespaceprefix,
+                namespacedef="",
+                name="person",
                 pretty_print=pretty_print,
             )
 
-    def build(self, node, gds_collector_=None):
-        self.gds_collector_ = gds_collector_
+    def build(self, node, collector=None) -> None:
+        self.collector = collector
         if SaveElementTreeNode:
-            self.gds_elementtree_node_ = node
+            self.elementtree_node = node
         already_processed = set()
-        self.ns_prefix_ = node.prefix
-        self._buildAttributes(node, node.attrib, already_processed)
+        self.buildAttributes(node, node.attrib, already_processed)
         for child in node:
-            nodeName_ = Tag_pattern_.match(child.tag).groups()[-1]
-            self._buildChildren(child, node, nodeName_, gds_collector_=gds_collector_)
-        return self
+            nodeName = tag_pattern.match(child.tag).groups()[-1]
+            self.buildChildren(child, node, nodeName, collector=collector)
 
-    def _buildAttributes(self, node, attrs, already_processed):
+    def buildAttributes(self, node, attrs, already_processed) -> None:
         pass
 
-    def _buildChildren(
-        self, child_, node, nodeName_, fromsubclass_=False, gds_collector_=None
-    ):
-        if nodeName_ == "dataEntryBy":
-            obj_ = DataEntryBy.factory(parent_object_=self)
-            obj_.build(child_, gds_collector_=gds_collector_)
-            self.dataEntryBy = obj_
-            obj_.original_tagname_ = "dataEntryBy"
-        elif nodeName_ == "dataGeneratorAndPublication":
-            obj_ = DataGeneratorAndPublication.factory(parent_object_=self)
-            obj_.build(child_, gds_collector_=gds_collector_)
-            self.dataGeneratorAndPublication = obj_
-            obj_.original_tagname_ = "dataGeneratorAndPublication"
-        elif nodeName_ == "person":
-            obj_ = Person.factory(parent_object_=self)
-            obj_.build(child_, gds_collector_=gds_collector_)
-            self.person.append(obj_)
-            obj_.original_tagname_ = "person"
+    def buildChildren(
+        self, child_, node, nodeName, fromsubclass=False, collector=None
+    ) -> None:
+        if nodeName == "dataEntryBy":
+            obj = DataEntryBy(parent_object=self)
+            obj.build(child_, collector=collector)
+            self.dataEntryBy = obj
+            obj.original_tagname = "dataEntryBy"
+        elif nodeName == "dataGeneratorAndPublication":
+            obj = DataGeneratorAndPublication(parent_object=self)
+            obj.build(child_, collector=collector)
+            self.dataGeneratorAndPublication = obj
+            obj.original_tagname = "dataGeneratorAndPublication"
+        elif nodeName == "person":
+            obj = Person(parent_object=self)
+            obj.build(child_, collector=collector)
+            self.person.append(obj)
+            obj.original_tagname = "person"
 
 
 

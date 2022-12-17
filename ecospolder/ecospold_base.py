@@ -1,86 +1,88 @@
 import base64
-import datetime as datetime_
-import decimal as decimal_
+import datetime as date_t
+import decimal
+from decimal import Decimal
 import os
-import re as re_
+import re
 import sys
-
-from lxml import etree as etree_
+from io import StringIO
+from lxml import etree as etre
+from typing import List
+import time
 
 try:
-    ModulenotfoundExp_ = ModuleNotFoundError
+    ModulenotfoundExp = ModuleNotFoundError
 except NameError:
-    ModulenotfoundExp_ = ImportError
+    ModulenotfoundExp = ImportError
 
-ExternalEncoding = ""
 # Set this to false in order to deactivate during export, the use of
 # name space prefixes captured from the input document.
-UseCapturedNS_ = True
-CapturedNsmap_ = {}
-Tag_pattern_ = re_.compile(r"({.*})?(.*)")
-String_cleanup_pat_ = re_.compile(r"[\n\r\s]+")
-Namespace_extract_pat_ = re_.compile(r"{(.*)}(.*)")
-CDATA_pattern_ = re_.compile(r"<!\[CDATA\[.*?\]\]>", re_.DOTALL)
-GenerateDSNamespaceDefs_ = {}
-GenerateDSNamespaceTypePrefixes_ = {}
+UseCapturedNS = True
+CapturedNsmap = {}
+tag_pattern = re.compile(r"({.*})?(.*)")
+CDATA_pattern = re.compile(r"<!\[CDATA\[.*?\]\]>", re.DOTALL)
 
-BaseStrType_ = str
+if sys.version_info.major == 2:
+    BaseStrType = basestring
+else:
+    BaseStrType = str
 
-Validate_simpletypes_ = True
+Validate_simpletypes = True
 SaveElementTreeNode = True
 TagNamePrefix = ""
 
 try:
     from enum import Enum
-except ModulenotfoundExp_:
+except ModulenotfoundExp:
     Enum = object
 
-CurrentSubclassModule_ = None
+CurrentSubclassModule = None
 
+def cast_value_with_type(typ, value):
+    if typ is None or value is None:
+        return value
+    return typ(value)
 
-class GdsCollector_(object):
-    def __init__(self, messages=None):
-        if messages is None:
-            self.messages = []
-        else:
-            self.messages = messages
+class CollectorClass(object):
+    def __init__(self, messages=None) -> None:
+        self.messages = [] if messages is None else messages
 
-    def add_message(self, msg):
+    def add_message(self, msg: str) -> None:
         self.messages.append(msg)
 
-    def get_messages(self):
+    def get_messages(self) -> str:
         return self.messages
 
-    def clear_messages(self):
+    def clear_messages(self) -> None:
         self.messages = []
 
-    def print_messages(self):
+    def print_messages(self) -> None:
         for msg in self.messages:
             print("Warning: {}".format(msg))
 
-    def write_messages(self, outstream):
+    def write_messages(self, outstream) -> None:
         for msg in self.messages:
             outstream.write("Warning: {}\n".format(msg))
 
 
 class EcospoldBase:
-    tzoff_pattern = re_.compile(r"(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$")
+    tzoff_pattern = re.compile(r"(\+|-)((0\d|1[0-3]):[0-5]\d|14:00)$")
 
-    class _FixedOffsetTZ(datetime_.tzinfo):
-        def __init__(self, offset, name):
-            self.__offset = datetime_.timedelta(minutes=offset)
+    class _FixedOffsetTZ(date_t.tzinfo):
+        def __init__(self, offset, name) -> None:
+            self.__offset = date_t.timedelta(minutes=offset)
             self.__name = name
 
-        def utcoffset(self, dt):
+        def utcoffset(self) -> date_t.timedelta:
             return self.__offset
 
-        def tzname(self, dt):
+        def tzname(self) -> str:
             return self.__name
 
-        def dst(self, dt):
+        def dst(self) -> None:
             return None
 
-    def __str__(self):
+    def __str__(self) -> str:
         settings = {
             "str_pretty_print": True,
             "str_indent_level": 0,
@@ -91,64 +93,60 @@ class EcospoldBase:
         for n in settings:
             if hasattr(self, n):
                 settings[n] = getattr(self, n)
-        if sys.version_info.major == 2:
-            from StringIO import StringIO
-        else:
-            from io import StringIO
         output = StringIO()
         self.export(
             output,
             settings["str_indent_level"],
             pretty_print=settings["str_pretty_print"],
-            namespaceprefix_=settings["str_namespaceprefix"],
-            name_=settings["str_name"],
-            namespacedef_=settings["str_namespacedefs"],
+            namespaceprefix=settings["str_namespaceprefix"],
+            name=settings["str_name"],
+            namespacedef=settings["str_namespacedefs"],
         )
         strval = output.getvalue()
         output.close()
         return strval
 
-    def gds_format_string(self, input_data, input_name=""):
+    def format_string(self, input_data : str, input_name="") -> str:
         return input_data
 
-    def gds_parse_string(self, input_data, node=None, input_name=""):
+    def parse_string(self, input_data : str) -> str:
         return input_data
 
-    def gds_validate_string(self, input_data, node=None, input_name=""):
+    def validate_string(self, input_data : str) -> str:
         if not input_data:
             return ""
         else:
             return input_data
 
-    def gds_format_base64(self, input_data, input_name=""):
+    def format_base64(self, input_data) -> str:
         return base64.b64encode(input_data).decode("ascii")
 
-    def gds_validate_base64(self, input_data, node=None, input_name=""):
+    def validate_base64(self, input_data, node=None, input_name=""):
         return input_data
 
-    def gds_format_integer(self, input_data, input_name=""):
+    def format_integer(self, input_data, input_name=""):
         return "%d" % int(input_data)
 
-    def gds_parse_integer(self, input_data, node=None, input_name=""):
+    def parse_integer(self, input_data : int, node=None, input_name=""):
         try:
             ival = int(input_data)
         except (TypeError, ValueError) as exp:
             raise_parse_error(node, "Requires integer value: %s" % exp)
         return ival
 
-    def gds_validate_integer(self, input_data, node=None, input_name=""):
+    def validate_integer(self, input_data : int, node=None, input_name="") -> int:
         try:
             value = int(input_data)
         except (TypeError, ValueError):
             raise_parse_error(node, "Requires integer value")
         return value
 
-    def gds_format_integer_list(self, input_data, input_name=""):
-        if len(input_data) > 0 and not isinstance(input_data[0], BaseStrType_):
+    def format_integer_list(self, input_data : List[int], input_name=""):
+        if len(input_data) > 0 and not isinstance(input_data[0], BaseStrType):
             input_data = [str(s) for s in input_data]
         return "%s" % " ".join(input_data)
 
-    def gds_validate_integer_list(self, input_data, node=None, input_name=""):
+    def validate_integer_list(self, input_data : List[int], node=None, input_name="") -> List[int]:
         values = input_data.split()
         for value in values:
             try:
@@ -157,29 +155,29 @@ class EcospoldBase:
                 raise_parse_error(node, "Requires sequence of integer values")
         return values
 
-    def gds_format_float(self, input_data, input_name=""):
+    def format_float(self, input_data : float, input_name=""):
         return ("%.15f" % float(input_data)).rstrip("0")
 
-    def gds_parse_float(self, input_data, node=None, input_name=""):
+    def parse_float(self, input_data : float, node=None, input_name=""):
         try:
-            fval_ = float(input_data)
+            fval = float(input_data)
         except (TypeError, ValueError) as exp:
             raise_parse_error(node, "Requires float or double value: %s" % exp)
-        return fval_
+        return fval
 
-    def gds_validate_float(self, input_data, node=None, input_name=""):
+    def validate_float(self, input_data : float, node=None, input_name="") -> float:
         try:
             value = float(input_data)
         except (TypeError, ValueError):
             raise_parse_error(node, "Requires float value")
         return value
 
-    def gds_format_float_list(self, input_data, input_name=""):
-        if len(input_data) > 0 and not isinstance(input_data[0], BaseStrType_):
+    def format_float_list(self, input_data : List[float], input_name=""):
+        if len(input_data) > 0 and not isinstance(input_data[0], BaseStrType):
             input_data = [str(s) for s in input_data]
         return "%s" % " ".join(input_data)
 
-    def gds_validate_float_list(self, input_data, node=None, input_name=""):
+    def validate_float_list(self, input_data : List[float], node=None, input_name="") -> List[float]:
         values = input_data.split()
         for value in values:
             try:
@@ -188,7 +186,7 @@ class EcospoldBase:
                 raise_parse_error(node, "Requires sequence of float values")
         return values
 
-    def gds_format_decimal(self, input_data, input_name=""):
+    def format_decimal(self, input_data : Decimal, input_name=""):
         return_value = "%s" % input_data
         if "." in return_value:
             return_value = return_value.rstrip("0")
@@ -196,57 +194,57 @@ class EcospoldBase:
                 return_value = return_value.rstrip(".")
         return return_value
 
-    def gds_parse_decimal(self, input_data, node=None, input_name=""):
+    def parse_decimal(self, input_data : Decimal, node=None, input_name=""):
         try:
-            decimal_value = decimal_.Decimal(input_data)
+            decimal_value = Decimal(input_data)
         except (TypeError, ValueError):
             raise_parse_error(node, "Requires decimal value")
         return decimal_value
 
-    def gds_validate_decimal(self, input_data, node=None, input_name=""):
+    def validate_decimal(self, input_data : Decimal, node=None, input_name="") -> Decimal:
         try:
-            value = decimal_.Decimal(input_data)
+            value = Decimal(input_data)
         except (TypeError, ValueError):
             raise_parse_error(node, "Requires decimal value")
         return value
 
-    def gds_format_decimal_list(self, input_data, input_name=""):
-        if len(input_data) > 0 and not isinstance(input_data[0], BaseStrType_):
+    def format_decimal_list(self, input_data : List[Decimal], input_name=""):
+        if len(input_data) > 0 and not isinstance(input_data[0], BaseStrType):
             input_data = [str(s) for s in input_data]
-        return " ".join([self.gds_format_decimal(item) for item in input_data])
+        return " ".join([self.format_decimal(item) for item in input_data])
 
-    def gds_validate_decimal_list(self, input_data, node=None, input_name=""):
+    def validate_decimal_list(self, input_data : List[Decimal], node=None, input_name="") -> List[Decimal]:
         values = input_data.split()
         for value in values:
             try:
-                decimal_.Decimal(value)
+                Decimal(value)
             except (TypeError, ValueError):
                 raise_parse_error(node, "Requires sequence of decimal values")
         return values
 
-    def gds_format_double(self, input_data, input_name=""):
+    def format_double(self, input_data : float, input_name=""):
         return "%s" % input_data
 
-    def gds_parse_double(self, input_data, node=None, input_name=""):
+    def parse_double(self, input_data : float, node=None, input_name=""):
         try:
-            fval_ = float(input_data)
+            fval = float(input_data)
         except (TypeError, ValueError) as exp:
             raise_parse_error(node, "Requires double or float value: %s" % exp)
-        return fval_
+        return fval
 
-    def gds_validate_double(self, input_data, node=None, input_name=""):
+    def validate_double(self, input_data : float, node=None, input_name="") -> float:
         try:
             value = float(input_data)
         except (TypeError, ValueError):
             raise_parse_error(node, "Requires double or float value")
         return value
 
-    def gds_format_double_list(self, input_data, input_name=""):
-        if len(input_data) > 0 and not isinstance(input_data[0], BaseStrType_):
+    def format_double_list(self, input_data : List[float], input_name=""):
+        if len(input_data) > 0 and not isinstance(input_data[0], BaseStrType):
             input_data = [str(s) for s in input_data]
         return "%s" % " ".join(input_data)
 
-    def gds_validate_double_list(self, input_data, node=None, input_name=""):
+    def validate_double_list(self, input_data : List[float], node=None, input_name="") -> List[float]:
         values = input_data.split()
         for value in values:
             try:
@@ -255,10 +253,10 @@ class EcospoldBase:
                 raise_parse_error(node, "Requires sequence of double or float values")
         return values
 
-    def gds_format_boolean(self, input_data, input_name=""):
+    def format_boolean(self, input_data, input_name=""):
         return ("%s" % input_data).lower()
 
-    def gds_parse_boolean(self, input_data, node=None, input_name=""):
+    def parse_boolean(self, input_data : str, node=None, input_name=""):
         input_data = input_data.strip()
         if input_data in ("true", "1"):
             bval = True
@@ -268,7 +266,7 @@ class EcospoldBase:
             raise_parse_error(node, "Requires boolean value")
         return bval
 
-    def gds_validate_boolean(self, input_data, node=None, input_name=""):
+    def validate_boolean(self, input_data : bool, node=None, input_name="") -> bool:
         if input_data not in (
             True,
             1,
@@ -280,15 +278,15 @@ class EcospoldBase:
             )
         return input_data
 
-    def gds_format_boolean_list(self, input_data, input_name=""):
-        if len(input_data) > 0 and not isinstance(input_data[0], BaseStrType_):
+    def format_boolean_list(self, input_data : List[str], input_name=""):
+        if len(input_data) > 0 and not isinstance(input_data[0], BaseStrType):
             input_data = [str(s) for s in input_data]
         return "%s" % " ".join(input_data)
 
-    def gds_validate_boolean_list(self, input_data, node=None, input_name=""):
+    def validate_boolean_list(self, input_data : List[bool], node=None, input_name="") -> List[bool]:
         values = input_data.split()
         for value in values:
-            value = self.gds_parse_boolean(value, node, input_name)
+            value = self.parse_boolean(value, node, input_name)
             if value not in (
                 True,
                 1,
@@ -301,10 +299,10 @@ class EcospoldBase:
                 )
         return values
 
-    def gds_validate_datetime(self, input_data, node=None, input_name=""):
+    def validate_datetime(self, input_data : date_t, node=None, input_name="") -> date_t:
         return input_data
 
-    def gds_format_datetime(self, input_data, input_name=""):
+    def format_datetime(self, input_data : date_t, input_name=""):
         if input_data.microsecond == 0:
             _svalue = "%04d-%02d-%02dT%02d:%02d:%02d" % (
                 input_data.year,
@@ -342,7 +340,7 @@ class EcospoldBase:
         return _svalue
 
     @classmethod
-    def gds_parse_datetime(cls, input_data):
+    def parse_datetime(cls, input_data : str):
         tz = None
         if input_data[-1] == "Z":
             tz = EcospoldBase._FixedOffsetTZ(0, "UTC")
@@ -363,16 +361,16 @@ class EcospoldBase:
                 time_parts[0],
                 "{}".format(micro_seconds).rjust(6, "0"),
             )
-            dt = datetime_.datetime.strptime(input_data, "%Y-%m-%dT%H:%M:%S.%f")
+            dt = date_t.datetime.strptime(input_data, "%Y-%m-%dT%H:%M:%S.%f")
         else:
-            dt = datetime_.datetime.strptime(input_data, "%Y-%m-%dT%H:%M:%S")
+            dt = date_t.datetime.strptime(input_data, "%Y-%m-%dT%H:%M:%S")
         dt = dt.replace(tzinfo=tz)
         return dt
 
-    def gds_validate_date(self, input_data, node=None, input_name=""):
+    def validate_date(self, input_data : date_t, node=None, input_name="") -> date_t:
         return input_data
 
-    def gds_format_date(self, input_data, input_name=""):
+    def format_date(self, input_data : date_t, input_name=""):
         _svalue = "%04d-%02d-%02d" % (
             input_data.year,
             input_data.month,
@@ -399,7 +397,7 @@ class EcospoldBase:
         return _svalue
 
     @classmethod
-    def gds_parse_date(cls, input_data):
+    def parse_date(cls, input_data : str):
         tz = None
         if input_data[-1] == "Z":
             tz = EcospoldBase._FixedOffsetTZ(0, "UTC")
@@ -413,14 +411,14 @@ class EcospoldBase:
                     tzoff *= -1
                 tz = EcospoldBase._FixedOffsetTZ(tzoff, results.group(0))
                 input_data = input_data[:-6]
-        dt = datetime_.datetime.strptime(input_data, "%Y-%m-%d")
+        dt = date_t.datetime.strptime(input_data, "%Y-%m-%d")
         dt = dt.replace(tzinfo=tz)
         return dt.date()
 
-    def gds_validate_time(self, input_data, node=None, input_name=""):
+    def validate_time(self, input_data, node=None, input_name=""):
         return input_data
 
-    def gds_format_time(self, input_data, input_name=""):
+    def format_time(self, input_data, input_name=""):
         if input_data.microsecond == 0:
             _svalue = "%02d:%02d:%02d" % (
                 input_data.hour,
@@ -451,7 +449,7 @@ class EcospoldBase:
                     _svalue += "{0:02d}:{1:02d}".format(hours, minutes)
         return _svalue
 
-    def gds_validate_simple_patterns(self, patterns, target):
+    def validate_simple_patterns(self, patterns, target) -> bool:
         # pat is a list of lists of strings/patterns.
         # The target value must match at least one of the patterns
         # in order for the test to succeed.
@@ -460,7 +458,7 @@ class EcospoldBase:
         for patterns1 in patterns:
             found2 = False
             for patterns2 in patterns1:
-                mo = re_.search(patterns2, target)
+                mo = re.search(patterns2, target)
                 if mo is not None and len(mo.group(0)) == len(target):
                     found2 = True
                     break
@@ -470,7 +468,7 @@ class EcospoldBase:
         return found1
 
     @classmethod
-    def gds_parse_time(cls, input_data):
+    def parse_time(cls, input_data):
         tz = None
         if input_data[-1] == "Z":
             tz = EcospoldBase._FixedOffsetTZ(0, "UTC")
@@ -485,13 +483,13 @@ class EcospoldBase:
                 tz = EcospoldBase._FixedOffsetTZ(tzoff, results.group(0))
                 input_data = input_data[:-6]
         if len(input_data.split(".")) > 1:
-            dt = datetime_.datetime.strptime(input_data, "%H:%M:%S.%f")
+            dt = date_t.datetime.strptime(input_data, "%H:%M:%S.%f")
         else:
-            dt = datetime_.datetime.strptime(input_data, "%H:%M:%S")
+            dt = date_t.datetime.strptime(input_data, "%H:%M:%S")
         dt = dt.replace(tzinfo=tz)
         return dt.time()
 
-    def gds_check_cardinality_(
+    def check_cardinality(
         self, value, input_name, min_occurs=0, max_occurs=1, required=None
     ):
         if value is None:
@@ -502,29 +500,29 @@ class EcospoldBase:
             length = 1
         if required is not None:
             if required and length < 1:
-                self.gds_collector_.add_message(
+                self.collector.add_message(
                     "Required value {}{} is missing".format(
-                        input_name, self.gds_get_node_lineno_()
+                        input_name, self.get_node_lineno()
                     )
                 )
         if length < min_occurs:
-            self.gds_collector_.add_message(
+            self.collector.add_message(
                 "Number of values for {}{} is below "
                 "the minimum allowed, "
                 "expected at least {}, found {}".format(
-                    input_name, self.gds_get_node_lineno_(), min_occurs, length
+                    input_name, self.get_node_lineno(), min_occurs, length
                 )
             )
         elif length > max_occurs:
-            self.gds_collector_.add_message(
+            self.collector.add_message(
                 "Number of values for {}{} is above "
                 "the maximum allowed, "
                 "expected at most {}, found {}".format(
-                    input_name, self.gds_get_node_lineno_(), max_occurs, length
+                    input_name, self.get_node_lineno(), max_occurs, length
                 )
             )
 
-    def gds_validate_builtin_ST_(
+    def validate_builtin_ST(
         self,
         validator,
         value,
@@ -532,14 +530,15 @@ class EcospoldBase:
         min_occurs=None,
         max_occurs=None,
         required=None,
-    ):
+    ) -> bool:
         if value is not None:
             try:
                 validator(value, input_name=input_name)
-            except GDSParseError as parse_error:
-                self.gds_collector_.add_message(str(parse_error))
+            except ParseError as parse_error:
+                self.collector.add_message(str(parse_error))
+        return True
 
-    def gds_validate_defined_ST_(
+    def validate_defined_ST(
         self,
         validator,
         value,
@@ -547,63 +546,48 @@ class EcospoldBase:
         min_occurs=None,
         max_occurs=None,
         required=None,
-    ):
+    ) -> bool:
         if value is not None:
             try:
                 validator(value)
-            except GDSParseError as parse_error:
-                self.gds_collector_.add_message(str(parse_error))
+            except ParseError as parse_error:
+                self.collector.add_message(str(parse_error))
+        return True
 
-    def gds_str_lower(self, instring):
+    def str_lower(self, instring):
         return instring.lower()
 
-    def get_path_(self, node):
+    def get_path(self, node):
         path_list = []
-        self.get_path_list_(node, path_list)
+        self.get_path_list(node, path_list)
         path_list.reverse()
         path = "/".join(path_list)
         return path
 
-    Tag_strip_pattern_ = re_.compile(r"\{.*\}")
+    Tag_strip_pattern_ = re.compile(r"\{.*\}")
 
-    def get_path_list_(self, node, path_list):
+    def get_path_list(self, node, path_list):
         if node is None:
             return
         tag = EcospoldBase.Tag_strip_pattern_.sub("", node.tag)
         if tag:
             path_list.append(tag)
-        self.get_path_list_(node.getparent(), path_list)
+        self.get_path_list(node.getparent(), path_list)
 
-    def get_class_obj_(self, node, default_class=None):
-        class_obj1 = default_class
-        if "xsi" in node.nsmap:
-            classname = node.get("{%s}type" % node.nsmap["xsi"])
-            if classname is not None:
-                names = classname.split(":")
-                if len(names) == 2:
-                    classname = names[1]
-                class_obj2 = globals().get(classname)
-                if class_obj2 is not None:
-                    class_obj1 = class_obj2
-        return class_obj1
-
-    def gds_build_any(self, node, type_name=None):
+    def build_any(self, node, type_name=None):
         # provide default value in case option --disable-xml is used.
         content = ""
-        content = etree_.tostring(node, encoding="unicode")
+        content = etre.tostring(node, encoding="unicode")
         return content
 
     @classmethod
-    def gds_reverse_node_mapping(cls, mapping):
+    def reverse_node_mapping(cls, mapping):
         return dict(((v, k) for k, v in mapping.items()))
 
     @staticmethod
-    def gds_encode(instring):
+    def encode(instring):
         if sys.version_info.major == 2:
-            if ExternalEncoding:
-                encoding = ExternalEncoding
-            else:
-                encoding = "utf-8"
+            encoding = "utf-8"
             return instring.encode(encoding)
         else:
             return instring
@@ -615,20 +599,20 @@ class EcospoldBase:
         elif sys.version_info.major == 2 and isinstance(instring, unicode):
             result = quote_xml(instring).encode("utf8")
         else:
-            result = EcospoldBase.gds_encode(str(instring))
+            result = EcospoldBase.encode(str(instring))
         return result
 
     def __eq__(self, other):
-        def excl_select_objs_(obj):
-            return obj[0] != "parent_object_" and obj[0] != "gds_collector_"
+        def excl_select_objs(obj):
+            return obj[0] != "parent_object" and obj[0] != "collector"
 
         if type(self) != type(other):
             return False
         return all(
             x == y
             for x, y in zip_longest(
-                filter(excl_select_objs_, self.__dict__.items()),
-                filter(excl_select_objs_, other.__dict__.items()),
+                filter(excl_select_objs, self.__dict__.items()),
+                filter(excl_select_objs, other.__dict__.items()),
             )
         )
 
@@ -636,30 +620,30 @@ class EcospoldBase:
         return not self.__eq__(other)
 
     # Django ETL transform hooks.
-    def gds_djo_etl_transform(self):
+    def djo_etl_transform(self):
         pass
 
-    def gds_djo_etl_transform_db_obj(self, dbobj):
+    def djo_etl_transform_db_obj(self, dbobj):
         pass
 
     # SQLAlchemy ETL transform hooks.
-    def gds_sqa_etl_transform(self):
+    def sqa_etl_transform(self):
         return 0, None
 
-    def gds_sqa_etl_transform_db_obj(self, dbobj):
+    def sqa_etl_transform_db_obj(self, dbobj):
         pass
 
-    def gds_get_node_lineno_(self):
+    def get_node_lineno(self):
         if (
-            hasattr(self, "gds_elementtree_node_")
-            and self.gds_elementtree_node_ is not None
+            hasattr(self, "elementtree_node")
+            and self.elementtree_node is not None
         ):
-            return " near line {}".format(self.gds_elementtree_node_.sourceline)
+            return " near line {}".format(self.elementtree_node.sourceline)
         else:
             return ""
 
 
-def getSubclassFromModule_(module, class_):
+def getSubclassFromModule(module, class_):
     """Get the subclass of a class from a specific module."""
     name = class_.__name__ + "Sub"
     if hasattr(module, name):
@@ -668,34 +652,34 @@ def getSubclassFromModule_(module, class_):
         return None
 
 
-def parsexml_(infile, parser=None, **kwargs):
+def parsexml(infile, parser=None, **kwargs):
     if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
         try:
-            parser = etree_.ETCompatXMLParser()
+            parser = etre.ETCompatXMLParser()
         except AttributeError:
             # fallback to xml.etree
-            parser = etree_.XMLParser()
+            parser = etre.XMLParser()
     try:
         if isinstance(infile, os.PathLike):
             infile = os.path.join(infile)
     except AttributeError:
         pass
-    doc = etree_.parse(infile, parser=parser, **kwargs)
+    doc = etre.parse(infile, parser=parser, **kwargs)
     return doc
 
 
-def parsexmlstring_(instring, parser=None, **kwargs):
+def parsexmlstring(instring, parser=None, **kwargs):
     if parser is None:
         # Use the lxml ElementTree compatible parser so that, e.g.,
         #   we ignore comments.
         try:
-            parser = etree_.ETCompatXMLParser()
+            parser = etre.ETCompatXMLParser()
         except AttributeError:
             # fallback to xml.etree
-            parser = etree_.XMLParser()
-    element = etree_.fromstring(instring, parser=parser, **kwargs)
+            parser = etre.XMLParser()
+    element = etre.fromstring(instring, parser=parser, **kwargs)
     return element
 
 
@@ -709,10 +693,10 @@ def quote_xml(inStr):
     "Escape markup chars, but do not modify CDATA sections."
     if not inStr:
         return ""
-    s1 = isinstance(inStr, BaseStrType_) and inStr or "%s" % inStr
+    s1 = isinstance(inStr, BaseStrType) and inStr or "%s" % inStr
     s2 = ""
     pos = 0
-    matchobjects = CDATA_pattern_.finditer(s1)
+    matchobjects = CDATA_pattern.finditer(s1)
     for mo in matchobjects:
         s3 = s1[pos : mo.start()]
         s2 += quote_xml_aux(s3)
@@ -731,7 +715,7 @@ def quote_xml_aux(inStr):
 
 
 def quote_attrib(inStr):
-    s1 = isinstance(inStr, BaseStrType_) and inStr or "%s" % inStr
+    s1 = isinstance(inStr, BaseStrType) and inStr or "%s" % inStr
     s1 = s1.replace("&", "&amp;")
     s1 = s1.replace("<", "&lt;")
     s1 = s1.replace(">", "&gt;")
@@ -762,7 +746,7 @@ def quote_python(inStr):
             return '"""%s"""' % s1
 
 
-def get_all_text_(node):
+def get_all_text(node):
     if node.text is not None:
         text = node.text
     else:
@@ -773,7 +757,7 @@ def get_all_text_(node):
     return text
 
 
-def find_attr_value_(attr_name, node):
+def find_attr_value(attr_name, node):
     attrs = node.attrib
     attr_parts = attr_name.split(":")
     value = None
@@ -800,7 +784,7 @@ def encode_str_2_3(instr):
     return instr
 
 
-class GDSParseError(Exception):
+class ParseError(Exception):
     pass
 
 
@@ -811,7 +795,7 @@ def raise_parse_error(node, msg):
             node.tag,
             node.sourceline,
         )
-    raise GDSParseError(msg)
+    raise ParseError(msg)
 
 
 class MixedContainer:
@@ -831,7 +815,7 @@ class MixedContainer:
     TypeBoolean = 7
     TypeBase64 = 8
 
-    def __init__(self, category, content_type, name, value):
+    def __init__(self, category, content_type, name, value) -> None:
         self.category = category
         self.content_type = content_type
         self.name = name
@@ -858,7 +842,7 @@ class MixedContainer:
             self.exportSimple(outfile, level, name)
         else:  # category == MixedContainer.CategoryComplex
             self.value.export(
-                outfile, level, namespace, name_=name, pretty_print=pretty_print
+                outfile, level, namespace, name=name, pretty_print=pretty_print
             )
 
     def exportSimple(self, outfile, level, name):
@@ -881,7 +865,7 @@ class MixedContainer:
                 "<%s>%s</%s>" % (self.name, base64.b64encode(self.value), self.name)
             )
 
-    def to_etree(self, element, mapping_=None, reverse_mapping_=None, nsmap_=None):
+    def to_etree(self, element, mapping=None, reverse_mapping=None, nsmap=None):
         if self.category == MixedContainer.CategoryText:
             # Prevent exporting empty content as empty lines.
             if self.value.strip():
@@ -896,12 +880,12 @@ class MixedContainer:
                     else:
                         element.text += self.value
         elif self.category == MixedContainer.CategorySimple:
-            subelement = etree_.SubElement(element, "%s" % self.name)
-            subelement.text = self.to_etree_simple()
+            subelement = etre.SubElement(element, "%s" % self.name)
+            subelement.text = self.to_etresimple()
         else:  # category == MixedContainer.CategoryComplex
             self.value.to_etree(element)
 
-    def to_etree_simple(self, mapping_=None, reverse_mapping_=None, nsmap_=None):
+    def to_etresimple(self, mapping=None, reverse_mapping=None, nsmap=None):
         if self.content_type == MixedContainer.TypeString:
             text = self.value
         elif (
@@ -948,7 +932,7 @@ class MixedContainer:
             outfile.write(")\n")
 
 
-class MemberSpec_(object):
+class MemberSpec(object):
     def __init__(
         self,
         name="",
@@ -957,7 +941,7 @@ class MemberSpec_(object):
         optional=0,
         child_attrs=None,
         choice=None,
-    ):
+    ) -> None:
         self.name = name
         self.data_type = data_type
         self.container = container
